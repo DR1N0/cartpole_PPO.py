@@ -1,14 +1,16 @@
-from model_train import PPO, get_action
-import torch
 import gym
-from gym import wrappers
 import matplotlib.pyplot as plt
+import torch
+from gym import wrappers
+
+from model_train import PPO, get_action
+
 
 def eval():
     model = PPO()
     model.load_state_dict(torch.load('cartpole_model_trained.pth'))
     env = gym.make('CartPole-v1')
-    env = wrappers.Monitor(env, "./cartpole",video_callable=False, force=True)
+    env = wrappers.Monitor(env, "./cartpole", video_callable=False, force=True)
     # 主循环
     count = 100
     stability = 0.95
@@ -23,9 +25,9 @@ def eval():
         while not done:
             cnt = 0
             prob = model.pi(torch.from_numpy(s).float())
-            a = get_action(prob, stability = stability)
+            a = get_action(prob, stability=stability)
             s_prime, r, done, info = env.step(a)
-            #env.render()
+            # env.render()
             s = s_prime
             score += r
             if cnt > 1000:
@@ -36,10 +38,10 @@ def eval():
         score_interval += score
         score_total += score
         if n_epi % show_interval == 0:
-            print('avg score of #', n_epi - show_interval, '-', n_epi, ':', score_interval/show_interval)
+            print('avg score of #', n_epi - show_interval, '-', n_epi, ':', score_interval / show_interval)
             score_interval = 0
     env.close()
-    print('total avg:',score_total / (count - 1))
+    print('total avg:', score_total / (count - 1))
     plt.rcParams['figure.figsize'] = (16, 10)
     plt.plot(score_lst)
     plt.title('Score in Test when stability = ', stability)
